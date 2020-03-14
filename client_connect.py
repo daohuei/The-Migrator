@@ -40,21 +40,13 @@ def udp_thread():
 	MESSAGE = "a" * msg_len
 	sock = socket.socket(socket.AF_INET, # Internet
 					 socket.SOCK_DGRAM) # UDP
-	connect_info = dict()
-	try:
-		with open('connect_info.json', 'r') as rfile:
-			data_text = json.load(rfile)
-			connect_info = json.loads(data_text)			
-			#print(type(data_text))
-			#print(type(connect_info))
-		# UDP
-		while True:
-			time.sleep(15)
-			UDP_IP_LIST = connect_info['node_list']
-			for UDP_IP in UDP_IP_LIST:
-				send_message_udp(sock, UDP_IP, UDP_PORT, MESSAGE)
-	except Exception as e:
-		print(str(e))
+	# UDP
+	while True:
+		connect_info = connect_server()
+		time.sleep(15)
+		UDP_IP_LIST = connect_info['node_list']
+		for UDP_IP in UDP_IP_LIST:
+			send_message_udp(sock, UDP_IP, UDP_PORT, MESSAGE)
 
 def test_program(v_ip):
 	"""
@@ -71,8 +63,8 @@ def test_program(v_ip):
 def ping_test(v_ip):	
 	ret = 0
 	while ret == 0:
-		time.sleep(1)
-		ret = os.system("ping -w 5 "+v_ip)
+		time.sleep(5)
+		ret = os.system("ping "+v_ip)
 		print(ret)
 	print("disconnection")
 
@@ -95,8 +87,6 @@ def main():
 					 socket.SOCK_DGRAM) # UDP
 	info_json = json.dumps(connect_info, sort_keys=True, indent=4)
 	if 'status' in connect_info.keys() and connect_info['status'] == "Succeed":
-		with open('connect_info.json', 'w') as outfile:
-			json.dump(info_json, outfile)
 		print(connect_info)
 		#os.system('python3 udp_client.py')
 		udp_client_thread = threading.Thread(target=udp_thread)
